@@ -1,0 +1,127 @@
+## whole cell model, cf. "Model description"
+EQN
+
+#import
+
+null => si; vimp = et*vt*s/(Kt+s)
+
+
+#metabolism
+
+si => ns * a; vcat = em*vm*si/(Km+si)
+
+
+
+#transcription
+
+null => mr; omegar = wr*a/(thetar+a)
+null => mt; omegat = we*a/(thetax+a)
+null => mm; omegam = wm*a/(thetax+a)
+null => mq; omegaq = wq*a/(thetax+a)/(1+(q/Kq)^hq)
+
+null => mA; w0 = 0.01
+null => mI; w0
+
+null => mA; omegaA = wA*R*a/(thetax+a)
+null => mI; omegaI = wI*R*a/(thetax+a)
+
+
+#ribosome binding and translation
+
+r + mr <-> cr; kb = 1; ku = 1
+r + mt <-> ct; kb; ku
+r + mm <-> cm ;kb; ku
+r + mq <-> cq; kb; ku
+r + mA <-> cA; kb; ku
+r + mI <-> cI; kb; ku
+
+nr*a + cr => 2*r + mr; nur = cr * gamma / nr 
+nx*a + ct => r + mt + et; nut = ct * gamma / nx
+nx*a + cm => r + mm + em; num = cm * gamma / nx
+nx*a + cq => r + mq + q; nuq = cq * gamma /nx
+nx*a + cA => r + mA + A; nuA = cA * gamma/nx
+nx*a + cI => r + mI + I; nuI = cI * gamma/nx
+
+
+
+#degradation
+
+mr -> null; dm = 0.1
+mt -> null; dm
+mm -> null; dm
+mq -> null; dm
+mA -> null; dmA = 0.88
+mI -> null; dmI = 0.12
+
+A -> null; dA = 0.29
+I -> null; dI = 0.06
+
+
+
+
+#dilution
+
+r -> null; lam 
+et -> null; lam
+em -> null; lam
+q -> null; lam
+si -> null; lam
+a -> null; lam
+mr -> null; lam
+mt -> null; lam
+mm -> null; lam
+mq -> null; lam
+cr -> null; lam
+ct -> null; lam
+cm -> null; lam 
+cq -> null; lam
+
+A -> null; lam
+I -> null; lam
+cA -> null; lam
+cI -> null; lam
+mA -> null; lam
+mI -> null; lam
+
+
+PARAMS
+
+s = 1e4
+ns = 0.5
+nr = 7459
+nx = 300
+gammamax = 1260
+Kgamma = 7
+vt = 726
+Kt = 1000
+vm = 5800
+Km = 1000
+wr = 930
+we = 4.14
+wt = 4.14
+wm = 4.14
+wq = 948.93
+thetar = 426.87
+thetax = 4.38
+Kq = 152219
+hq = 4
+M = 1e8
+gamma = gammamax * a/(Kgamma + a)
+Rt = cr + ct + cm + cq
+lam = gamma*Rt/M
+kA = 160
+hA = 2
+kI = 160
+hI = 4
+alpha = (A/kA)^hA
+beta = (I/kI)^hI
+R = alpha/(1+alpha+beta+alpha*beta)
+wA = 640
+wI = 320
+
+INIT
+# initial conditions
+r= 10.0
+# scaled by a factor of 10
+a= 10000.0
+A = 10.0

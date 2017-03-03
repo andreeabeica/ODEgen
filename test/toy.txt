@@ -1,0 +1,15 @@
+EQN
+
+3A + 5B -> 5A + C; k1
+3C + 5B -> B + 3A; k2
+
+PARAMS
+
+k1 = 1
+k2 = 3*A*B/(A+B)
+
+INIT
+
+A 0
+B 10
+C 50

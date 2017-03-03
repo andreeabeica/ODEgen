@@ -1,0 +1,115 @@
+## Cell model
+
+EQN
+
+# Transcription
+null => m_r; omega_r = w_r / (theta_r / a + 1)
+null => m_t; omega_t = w_t / (theta_t / a + 1)
+null => m_m; omega_m = w_m / (theta_m / a + 1)
+null => m_q; omega_q = w_q / (theta_q / a + 1) * 1 / ((K_q / q)^alpha_q + 1)
+
+# mRNA Degradation
+m_r -> null; dm
+m_t -> null; dm
+m_m -> null; dm
+m_q -> null; dm
+
+# Ribosome binding
+r + m_r <-> c_r; kb; ku
+r + m_t <-> c_t; kb; ku
+r + m_m <-> c_m; kb; ku
+r + m_q <-> c_q; kb; ku
+
+# Chloramphenicol binding
+c_r => zm_r; v_cm_r = kb_cm * cm * c_r
+c_t => zm_t; v_cm_t = kb_cm * cm * c_t
+c_m => zm_m; v_cm_m = kb_cm * cm * c_m
+c_q => zm_q; v_cm_q = kb_cm * cm * c_q
+
+# Translation
+n_r * a + c_r => r + m_r + r; nu_r = c_r * gamma / n_r
+n_t * a + c_t => r + m_t + t; nu_t = c_t * gamma / n_t
+n_m * a + c_m => r + m_m + m; nu_m = c_m * gamma / n_m
+n_q * a + c_q => r + m_q + q; nu_q = c_q * gamma / n_q
+
+# Metabolism
+null => s_i; v_imp = t * v_t / (K_t / s_0 + 1) 
+s_i  => n_s * a; v_cat = m * v_m / (K_m / s_i + 1)
+
+# Dilution
+m_r -> null; lambda
+m_t -> null; lambda
+m_m -> null; lambda
+m_q -> null; lambda
+
+c_r -> null; lambda
+c_t -> null; lambda
+c_m -> null; lambda
+c_q -> null; lambda
+
+zm_r -> null; lambda
+zm_t -> null; lambda
+zm_m -> null; lambda
+zm_q -> null; lambda
+
+r -> null; lambda
+t -> null; lambda
+m -> null; lambda
+q -> null; lambda
+
+s_i -> null; lambda
+a -> null; lambda
+
+
+
+
+## Parameters
+PARAMS
+
+w_r = 930
+w_t = 4.14
+w_m = 4.14
+w_q = 948
+
+theta_r = 426
+theta_t = 4.38
+theta_m = 4.38
+theta_q = 4.38
+
+K_q     = 152000
+alpha_q = -4
+
+dm = 0.1
+
+kb = 1
+ku = 1
+
+s_0 = 10000
+v_t = 726
+K_t = 1000
+v_m = 5800
+K_m = 1000
+
+gamma_max = 1260
+K_gamma   = 7
+
+M = 10^8
+
+Rt     = c_r + c_t + c_m + c_q
+gamma  = gamma_max / (K_gamma / a + 1)
+lambda = gamma * Rt / M
+
+kb_cm = 0.00599
+cm    = 0
+
+n_s   = 0.5
+n_r = 0.5
+n_t = 0.5
+n_m = 0.5
+n_q = 0.5
+
+## Initial conditions
+INIT
+
+r = 10
+a = 10000

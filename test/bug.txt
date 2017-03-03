@@ -1,0 +1,87 @@
+EQN
+# Dilution
+r->null; lambda=((cr+ct+cq+cm)/M)*((gamma_max*a)/(K_gamma+a))
+et->null; lambda
+em->null; lambda
+q->null; lambda
+si->null; lambda
+a->null; lambda
+
+
+# Transcription
+null -> mr ;    wr
+null -> mt ;    wt
+null -> mm ;    wm
+null -> mq ;    wq
+
+# Nutrient import
+s=> si;         v_imp=(et*vt*s)/(Kt+s)
+
+# Metabolism
+si=>ns*a;               v_cat = (em*vm*si)/(Km+si)
+
+# Dilution/Degradation
+mr->null;               k1 = ((cr+ct+cq+cm)/M)*((gamma_max*a)/(K_gamma+a))+dm
+mt->null;               k1
+mm->null;               k1
+mq->null;               k1
+
+# Ribosome binding
+r + mr <-> cr;  kb;ku
+r + mt <-> ct;  kb;ku
+r + mm <-> cm;  kb;ku
+r + mq <-> cq;  kb;ku
+
+# Dilution
+cr -> null;             lambda
+ct -> null;             lambda
+cm -> null;             lambda
+cq -> null;             lambda
+
+#Translation
+nr*a + cr => r + mr + r;                vr = (cr/nr)*(gamma_max*a)/(K_gamma + a)
+nt*a + ct => r + mt + et;               vt= (ct/nx)*(gamma_max*a)/(K_gamma + a)
+
+
+
+
+
+
+
+
+
+
+
+
+PARAMS
+# Reaction parameters
+s=10000
+dm = 0.1               # mRNA degradation rate
+ns = 0.5               #nutrient efficiency
+nx = 300               # length of non-ribosomal proteins
+gamma_max = 1260       # max. translation elongation rate
+K_gamma = 7            # transl. elongation threshold
+vt = 726               # max. nutrient import rate
+Kt = 1000              #nutrient
+vm = 5800              #max.enzymatic rate
+Km = 1000              #enzymatic threshold
+wr = 930               #max. ribosome transcription rate
+we = 4.14              # max. enzyme transcription rate
+wm = 4.14
+wt = 4.14
+wq = 948.93            #max. q-transcription rate
+#theta_r = 426.87       #ribosomal transcription threshold
+#theta_nr = 4.38        # non-ribosomal transcription threshold
+Kq = 152219            # q-autoinhibition threshold
+hq = 4                 # q-autoinhibition Hill coefficient
+kb = 1                 # mRNA-ribosome binding rate
+ku =1                  # mRNA-ribosome unbinding rate
+M = 100000000          # total cell mass
+kcm = 0.00599          # chloramphenicol-binding rate
+nr=7459
+
+
+INIT
+#initial conditions
+r=10
+a=1000

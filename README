@@ -1,0 +1,47 @@
+Generates Matlab ODE files, from a chemical-equation-style file.
+
+USAGE WITH BINARIES: 
+Using the command line, place yourself inside the folder ODEgen; to generate the Matlab code, the command is: “_build/main.native file_name.txt” 
+
+e.g.: _build/main.native text/G.txt
+
+
+USAGE:
+
+"make clean" for cleanup
+
+"make" to generate executable "ODEgen"
+
+"./ODEgen filename.txt" to generate the code for the specified file; !FILE MUST HAVE EXTENSION .TXT
+
+Matlab code generated in Matlab_code directory, executable in Matlab via the "main.m" file
+
+
+FILE FORMAT:
+
+The .txt file must contains three sections (in this order): EQN, PARAMS and INIT
+
+EQN: contains declarations of the reactions, of one of the forms : 
+
+
+(coeff_1 "*" )? react_1 + (coeff_2 "*" )? react_2 +... -> (coeff_1 "*" )? prod_1 + (coeff_2 "*" )? prod_2 +... ; rate ("=" expression | value)?
+
+(coeff_1 "*" )? react_1 + (coeff_2 "*" )? react_2 +... <-> (coeff_1 "*" )? prod_1 + (coeff_2 "*" )? prod_2 +... ; rate1 ("=" expression | value)?; rate2 ("=" expression | value)?
+
+
+(coeff_1 "*" )? react_1 + (coeff_2 "*" )? react_2 +... => (coeff_1 "*" )? prod_1 + (coeff_2 "*" )? prod_2 +... ; rate ("=" expression | value)?
+
+(coeff_1 "*" )? react_1 + (coeff_2 "*" )? react_2 +... <=> (coeff_1 "*" )? prod_1 + (coeff_2 "*" )? prod_2 +... ; rate1 ("=" expression | value)?; rate2 ("=" expression | value)?
+
+Different types of arrows: 	"->" mass action, ireversible
+				"<->" mass action, reversible
+				"=>" rate law, the reaction velocity is specified by the user, ireversible
+				"<=>" rate law, the reaction velocity is specified by the user, reversible
+
+
+PARAMS: contains parameter declarations of the form "param = value | expression"
+
+
+INIT: contains initial conditions of the form "species = concentration"
+
+See example files in the "test" folder.

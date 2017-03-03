@@ -1,0 +1,16 @@
+EQN
+
+2A -> B; k1
+B + A <-> 2C; k2f; k2b
+
+RATES
+
+k1 = 10
+k2f = 4
+k2b = 5
+
+INIT
+
+A 100
+B 100
+C 0
