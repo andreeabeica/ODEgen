@@ -35,6 +35,7 @@ rule token = parse
 | "PARAMS"		{PARAMS}
 | "INIT"		{INIT}
 | "EQN"			{EQN}
+| "UNSCALABLE"		{UNSCALABLE}
 | "square"		{SQRT}
 | space+		{token lexbuf}
 | '#'| "//"		{comment lexbuf}

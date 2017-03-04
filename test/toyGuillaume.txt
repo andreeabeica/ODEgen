@@ -1,24 +1,20 @@
 EQN
 
-null => A; k_a
-A+B <-> C; k_ab; k_c
+null => A; k_a=3
+A+B <-> C; k_ab=0.2; k_c=0.01
 C => D; v_cat = k_cat * C/(k_m+C)
-A -> null; k_deg
+A -> null; k_deg=0.02
 B -> null; k_deg
 
 
 PARAMS
 
-k_a =0.01
-k_ab = 0.2
-k_c = 0.01
-k_deg = 0.02
 k_cat = 0.1
 k_m = 0.5
 
 INIT
 
 A 1
-B 0 
-C 0
-D 0
+
+
+UNSCALABLE

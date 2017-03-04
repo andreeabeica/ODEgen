@@ -23,7 +23,7 @@
 %token REV IREV NMAREV NMAIREV
 %token SEMI
 %token EOF
-%token EQN INIT PARAMS
+%token EQN INIT PARAMS UNSCALABLE
 
 
 
@@ -35,8 +35,17 @@
 
 
 file:
- | EQN; p = reaction_list; PARAMS; r = rate_def; INIT; i = init_cond; EOF	
-							{List.append (p:file) (List.append (r:file) (i:file))}
+ | EQN; p = reaction_list; PARAMS; r = rate_def; INIT; i = init_cond; UNSCALABLE; s = us_list; EOF	
+							{List.append (p:file) (List.append (r:file) (List.append (i:file) (s:file)))}
+;
+
+us_list:
+							{[]}
+ | i=us; l = us_list					{i :: l}
+;
+
+us:
+| i = ID						{([(i,"1")],6,[],[])}
 ;
 
 init_cond:

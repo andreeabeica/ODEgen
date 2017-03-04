@@ -3,7 +3,7 @@ EQN
 2A -> B; k1
 B + A <-> 2C; k2f; k2b
 
-RATES
+PARAMS
 
 k1 = 10
 k2f = 4
@@ -14,3 +14,5 @@ INIT
 A 100
 B 100
 C 0
+
+UNSCALABLE

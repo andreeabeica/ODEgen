@@ -125,3 +125,7 @@ r= 10.0
 # scaled by a factor of 10
 a= 10000.0
 A = 10.0
+
+UNSCALABLE
+lam
+a

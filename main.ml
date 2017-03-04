@@ -107,7 +107,7 @@ let count_react prog =
 				if rev = 2 || rev = 4 
 				then scount := !scount +2
 				else 
-					if rev = 1 || rev = 5
+					if rev = 3 || rev = 5
 					then scount := !scount +1
 			  		else ()
 			) prog
@@ -228,7 +228,7 @@ let construct_I prog species columns=
 let gen_init prog index =
 	let aux=
 	List.fold_left (fun acc (react_list, rev, prod_list, rates_list) ->
-			if List.length prod_list + List.length rates_list = 0
+			if rev = 1
 			then
 			List.fold_left (fun acc (species, init) -> (species, init) :: acc) acc react_list
 			else 
@@ -360,6 +360,9 @@ let stringset_of_list l = List.fold_left
 				StringSet.empty 
 				l
 
+(*constructs the unscalable list*)
+
+let gen_unscalable prog = List.fold_left (fun acc (a,b,c,d) -> if (b=6) then (acc@[fst (List.hd a)]) else acc) [] prog
 
 
 (*MICHAELIS MENTEN PART*)
@@ -440,7 +443,7 @@ let scale_Hill rate species factor =
 			  in
 			  let s2 = Str.string_after subrate (index+1)
 			  in 
-			  let l = List.fold_left (fun acc x -> (List.hd (String.split_on_char '^' x))::acc) [] (Str.split (Str.regexp "[+()]") s2)
+			  let l = List.fold_left (fun acc x -> (List.hd (Str.split (Str.regexp "\\^") x))::acc) [] (Str.split (Str.regexp "[+()]") s2)
 			  in
 			  let ll = List.filter (fun x -> x <> species) l
 		 	  in
@@ -457,24 +460,34 @@ let scale_mass_action rate factor coeff  =
 	String.concat "" [(fst rate);"/(";factor;"^";coeff;")"]
 	
 
-let scale prog species factor =
+let scale prog species factor unscalable =
+	let name = "sfactor_"^species
+	in
+	let _ = Hashtbl.add params name factor
+	in
+	if List.mem species unscalable
+	then
+	prog
+	else
 	List.fold_left 
 	(
 	fun new_list (a,b,c,d) ->
 		if (b=0)  
 		then try 
 			let value = List.assoc species a 
-			in 
-			if is_numeric value 
-			then new_list@[([(species, string_of_float((float_of_string factor) *.(float_of_string value)))],b,c,d)]
-			else new_list@[([(species, factor^"*("^value^")")],b,c,d)]
+			in  
+			new_list@[([(species, name^"*"^value)],b,c,d)]
 		      with _ ->
 			new_list@[(a,b,c,d)]
 		else
 		if (b=1)
-		then let new_val = scale_MM (scale_Hill (snd (List.hd d)) species factor) species factor
+		then let new_val = scale_MM (scale_Hill (snd (List.hd d)) species name) species name
 		     in
+                     if (not (List.mem (fst (List.hd d)) unscalable))
+		     then
 		     new_list@[(a,b,c,[(fst (List.hd d),new_val)])]
+		     else
+		     new_list@[(a,b,c,d)]
 		else
 		if (b=2)
 		then 
@@ -487,21 +500,33 @@ let scale prog species factor =
 				in
 				let new_forward_name = (fst (List.hd d))^(string_of_int aux)
 				in
-				let new_forward_rate = scale_mass_action (List.hd d) factor coeff1 
+				let new_forward_rate = scale_mass_action (List.hd d) name coeff1 
 				in
 				try
-			  	  let coeff2 = List.assoc species c
-				  in
-				  let r2 = add_rate_def (List.nth d 1)
-				  in
-				  let new_backward_name = (fst (List.nth d 1))^(string_of_int (aux+1))
-				  in
-				  let new_backward_rate = scale_mass_action (List.nth d 1) factor coeff2 
-				  in
-				  new_list@[(a,b,c,[(new_forward_name,new_forward_rate);(new_backward_name,new_backward_rate)])]@r1@r2
+			  	  	let coeff2 = List.assoc species c
+				  	in
+				  	let r2 = add_rate_def (List.nth d 1)
+				  	in
+				  	let new_backward_name = (fst (List.nth d 1))^(string_of_int (aux+1))
+				  	in
+				  	let new_backward_rate = scale_mass_action (List.nth d 1) name coeff2 
+				  	in
+					if (List.mem (fst (List.hd d)) unscalable) && (List.mem (fst (List.nth d 1)) unscalable)
+					then
+					new_list@[(a,b,c,d)]
+					else
+					if (List.mem (fst (List.hd d)) unscalable) && (not (List.mem (fst (List.nth d 1)) unscalable))
+					then
+					new_list@[(a,b,c,[List.hd d;(new_backward_name,new_backward_rate)])]@r2
+					else
+					if (not (List.mem (fst (List.hd d)) unscalable)) && (List.mem (fst (List.nth d 1)) unscalable)
+					then
+				  	new_list@[(a,b,c,[(new_forward_name,new_forward_rate);List.nth d 1])]@r1
+					else
+					new_list@[(a,b,c,[(new_forward_name,new_forward_rate);(new_backward_name,new_backward_rate)])]@r1@r2
+
 				with _ ->
-				  new_list@[(a,b,c,[(new_forward_name, new_forward_rate);List.nth d 1])]@r1
-		     
+				  	new_list@[(a,b,c,[(new_forward_name, new_forward_rate);List.nth d 1])]@r1
 			with _ -> new_list@[(a,b,c,d)]
 				
 			
@@ -517,25 +542,49 @@ let scale prog species factor =
 			in
 			let new_forward_name = (fst (List.hd d))^(string_of_int aux)
 			in
-			let new_forward_rate = scale_mass_action (List.hd d) factor coeff1 
+			let new_forward_rate = scale_mass_action (List.hd d) name coeff1 
 			in
+			if (not (List.mem (fst (List.hd d)) unscalable))
+			then
 			new_list@[(a,b,c,[(new_forward_name, new_forward_rate)])]@r1
+			else
+			new_list@[(a,b,c,d)]
 		     
 		with Not_found -> new_list@[(a,b,c,d)]
 		else
 		if (b=4)
 		then 
-			let v1 = scale_MM (scale_Hill (snd (List.hd d)) species factor) species factor
+			let v1 = scale_MM (scale_Hill (snd (List.hd d)) species name) species name
 			in
-			let v2 = scale_MM (scale_Hill (snd (List.nth d 1)) species factor) species factor
+			let v2 = scale_MM (scale_Hill (snd (List.nth d 1)) species name) species name
 			in
+			if (List.mem (fst (List.hd d)) unscalable) && (List.mem (fst (List.nth d 1)) unscalable)
+			then
+			new_list@[(a,b,c,d)]
+			else
+			if (List.mem (fst (List.hd d)) unscalable) && (not (List.mem (fst (List.nth d 1)) unscalable))
+			then
+			new_list@[(a,b,c,[List.hd d;(fst (List.nth d 1),v2)])]
+			else
+			if (not (List.mem (fst (List.hd d)) unscalable)) && (List.mem (fst (List.nth d 1)) unscalable)
+			then
+			new_list@[(a,b,c,[(fst (List.hd d),v1);List.nth d 1])]
+			else
 			new_list@[(a,b,c,[(fst (List.hd d),v1);(fst (List.nth d 1),v2)])]
 		
 		
-		else    let v1 = scale_MM (scale_Hill (snd (List.hd d)) species factor) species (factor)
+		else 
+		if (b=5)
+		then
+		   	let v1 = scale_MM (scale_Hill (snd (List.hd d)) species name) species name
 			in
+			if (not (List.mem (fst (List.hd d)) unscalable))
+			then
 			new_list@[(a,b,c,[(fst (List.hd d),v1)])]
-
+			else
+			new_list@[(a,b,c,d)]
+		else
+			new_list@[(a,b,c,d)]
 			
 		
 	)
@@ -543,20 +592,6 @@ let scale prog species factor =
 
 	[] prog
 
-(* filters mass-action reactions where species "a" is a reactant AND non-mass action reactions where "species" appears in the reaction rate *)
-
-let filter_list species list =  
-	List.filter (
-		     fun (a,b,c,d) ->		
-			(b = 0 && List.mem_assoc species a) 		|| 
-			(b = 1 && is_MM (snd(List.hd d)) species)    	|| 
-			(b = 2 && (List.mem_assoc species a || List.mem_assoc species c)) ||
-			(b = 3 && List.mem_assoc species a) ||
-			(b = 4 && (is_MM (snd(List.hd d)) species || is_MM (snd(List.nth d 1)) species)) ||
-			(b = 5 && is_MM (snd(List.hd d)) species)
-					 
-		   )
-	list
 	
 
 
@@ -718,13 +753,17 @@ let () =
     begin
       let prog = if (!species<>"" && !factor<>"") 
 		 then 
-			(scale (Parser.file Lexer.token buf) !species !factor )
+			let aux = Parser.file Lexer.token buf
+			in
+			let unscalable = gen_unscalable aux
+			in
+			(scale aux !species !factor unscalable)
 		 else 
 			Parser.file Lexer.token buf 
 	in
 	let () = count_react prog in
 	let s2i = construct_species prog in
-	print_rlist prog;
+	(*print_rlist prog;*)
 	generate prog;
 	gen_depth vars;
 	gen_dep dep s2i;
