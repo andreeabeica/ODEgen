@@ -1,12 +1,13 @@
 Generates Matlab ODE files, from a chemical-equation-style file.
 
-USAGE WITH BINARIES: 
+I. USAGE WITH BINARIES: 
 Using the command line, place yourself inside the folder ODEgen; to generate the Matlab code, the command is: “_build/main.native file_name.txt” 
 
 e.g.: _build/main.native text/G.txt
 
 
-USAGE:
+
+II.USAGE:
 
 "make clean" for cleanup
 
@@ -16,10 +17,19 @@ USAGE:
 
 Matlab code generated in Matlab_code directory, executable in Matlab via the "main.m" file
 
+OPTIONS:
 
-FILE FORMAT:
+To display compilation options, two possibilities:
+a) using binaries: "_build/main.native -help"
+b) user compiled: "./ODEgen -help"
 
-The .txt file must contains three sections (in this order): EQN, PARAMS and INIT
+To generate a scaled model, the command is: "./ODEgen -scale species_name factor filename.txt" (replace ./ODEgen with _build/main.native if using precompiled binaries), where "species_name" is the name of the species to scale, and "factor" denotes the scaling factor. OBS: both "species_name" and "factor" are STRINGS (e.g., ./ODEgen -scale "a" "10" filename.txt)
+
+
+
+III. FILE FORMAT:
+
+The .txt file must contains four sections (each section is preceded by the keyword, in this order): EQN, PARAMS, INIT and UNSCALABLE
 
 EQN: contains declarations of the reactions, of one of the forms : 
 
@@ -44,4 +54,22 @@ PARAMS: contains parameter declarations of the form "param = value | expression"
 
 INIT: contains initial conditions of the form "species = concentration"
 
+UNSCALABLE: contains the list of species/reaction rates that cannot be scaled (user defined); one species/rate per line
+
+
 See example files in the "test" folder.
+
+IV. IMPLEMENTATION SPECIFICITIES
+
+1. For the time being, the scaling option only detects and scales reactions having one of the  following chemical kinetics: 
+	-> mass-action
+	-> Michaelis-Menten like (i.e., a Michaelis-Menten factor multiplied/divided by another arithmetic expression)
+	-> Hill like (i.e., a Hill factor multiplied/divided by another arithmetic expression) 
+
+This means that, for example, when trying to scale a species "alpha", a reaction rate of the form "alpha/1+alpha+beta+alpha*beta" will not be scaled by our tool.
+
+2. Mathematical "syntactic sugar" such as operators (e.g., "sqrt") or variables (e.g., "pi") are not yet supported. The user is advised to use the values of these structures instead (e.g., write 3.1415 instead of "pi", and use "x^(1/2)" instead of "sqrt(x)")
+
+3. For reaction rates, it is assumed that the easiest declaration is being used by the user. For example, constants are to be written as such, instead of more complicated expressions: one should write "x=9" instead of "x=2*2+5". Rule of thumb: use arithmetic expressions for variables rather than for parameters. 
+
+

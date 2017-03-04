@@ -131,6 +131,7 @@ let construct_species prog =  let i = ref (-1) in
 		  ) [] prog 
 	in
 	List.rev assoc_list
+	
 
 (*decide if string is denoting a number; used for rate values*)
 
@@ -157,24 +158,28 @@ let is_numeric s = is_int s || is_float s
 let construct_J prog = 
 	let i = ref 0 in
 	let j = Array.make !scount "0" in
+	let _ =
         List.iter (fun (react_list, rev, prod_list, rate_list) -> 
 			if List.length react_list > 0 && List.length rate_list > 0 
 			then
 			   begin 
-				Array.set j !i (first (List.hd rate_list) ^ (if rev = 3 || rev = 2 then expr react_list else "")); 
+				Array.set j !i (first (List.hd rate_list) ^ (if rev = 2 || rev = 3 then expr react_list else "")); 
 				i:=!i+1 ;
 			   	if rev = 2 || rev = 4
 				then 
 				  begin 
-				   Array.set j !i (first (List.hd (List.tl rate_list)) ^ (if rev = 2 then expr prod_list else "")); 
+				   Array.set j !i (first (List.nth rate_list 1) ^ (if rev = 2 then expr prod_list else "")); 
 				   i:=!i+1 
 				  end
 			   	else ()
 			   end	
 			else ()
 
-		 ) prog;
+		 ) prog
+	in
 	j
+   
+	     
 		
 (*computes expression for "prod-cons"*)
 
@@ -228,7 +233,7 @@ let construct_I prog species columns=
 let gen_init prog index =
 	let aux=
 	List.fold_left (fun acc (react_list, rev, prod_list, rates_list) ->
-			if rev = 1
+			if rev = 0
 			then
 			List.fold_left (fun acc (species, init) -> (species, init) :: acc) acc react_list
 			else 
@@ -247,25 +252,7 @@ let gen_init prog index =
 	fprintf oc "end";
 	close_out oc
 
-(*check if rate is constant or expression*)
 
-let contains s1 s2 =
-  try
-    let len = String.length s2 in
-    for i = 0 to String.length s1 - len do
-      if String.sub s1 i len = s2 then raise Exit
-    done;
-    false
-  with Exit -> true
-
-let check s = 	String.contains s '+' ||
-	      	String.contains s '-' ||
-		String.contains s '/' ||
-		String.contains s '^' ||
-		String.contains s '(' ||
-		String.contains s ')' ||
-		String.contains s '*' ||
-		contains s "square"
 
 (*generates parameters and variables tables*)
 
@@ -273,7 +260,7 @@ let generate prog = List.iter (fun (r,rev,p,rates_list) ->
 				List.iter (fun (name,value) ->
 						 if value <> "nondef" 
 						 then 
-						   if not (check value) 
+						   if (is_numeric value) 
 						   then 
 							Hashtbl.add params name value
 						   else 
@@ -476,7 +463,7 @@ let scale prog species factor unscalable =
 		then try 
 			let value = List.assoc species a 
 			in  
-			new_list@[([(species, name^"*"^value)],b,c,d)]
+			new_list@[([(species, factor^"*"^value)],b,c,d)]
 		      with _ ->
 			new_list@[(a,b,c,d)]
 		else
@@ -720,6 +707,7 @@ let gen_main index =
 	in
 	fprintf oc ("%%parameters \n params = parameters ();\n") ;
 	fprintf oc ("%%define initial conditions \n init = initial ();\n") ;
+	fprintf oc ("%%default options \n options  = odeset('NonNegative', [1:end] , 'RelTol' , 1e-3 , 'AbsTol' , 1e-6);\n");
 	fprintf oc ("%%call solver routine\n t0 = 0; \n tf = 1e5; \n [t,y] = ode15s(@(t,y) ODE(t, y, parameters), [t0,tf], init);\n");
 	fprintf oc ("%%assign species names\n");
 	List.iter (fun (name, value) -> fprintf  oc " %s = y(:, %d);\n" name (value+1)) index;
@@ -764,6 +752,7 @@ let () =
 	let () = count_react prog in
 	let s2i = construct_species prog in
 	(*print_rlist prog;*)
+	(*List.iter (fun x -> print_endline x) (Array.to_list (construct_J prog));*)
 	generate prog;
 	gen_depth vars;
 	gen_dep dep s2i;
@@ -772,6 +761,10 @@ let () =
 	gen_ODE params vars s2i (construct_I prog s2i !scount) (construct_J prog) (dep_list dep_degree);
 	gen_main s2i;
         close_in f
+
+	
+	
+	
 	
     end
 

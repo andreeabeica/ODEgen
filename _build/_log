@@ -22,7 +22,7 @@ ocamlc.opt -c -o lexer.cmo lexer.ml # cached
 # Target: main.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:main.cmo, file:main.ml, implem, ocaml, quiet }
 ocamlc.opt -c -o main.cmo main.ml
 + ocamlc.opt -c -o main.cmo main.ml
-File "main.ml", line 680, characters 6-603:
+File "main.ml", line 667, characters 6-603:
 Warning 10: this expression should have type unit.
 # Target: parser.ml.depends, tags: { extension:ml, file:parser.ml, ocaml, ocamldep, quiet }
 ocamldep.opt -modules parser.ml > parser.ml.depends # cached
@@ -33,7 +33,7 @@ ocamlopt.opt -c -o lexer.cmx lexer.ml # cached
 # Target: main.cmx, tags: { compile, extension:cmx, extension:ml, file:main.cmx, file:main.ml, implem, native, ocaml, quiet }
 ocamlopt.opt -c -o main.cmx main.ml
 + ocamlopt.opt -c -o main.cmx main.ml
-File "main.ml", line 680, characters 6-603:
+File "main.ml", line 667, characters 6-603:
 Warning 10: this expression should have type unit.
 # Target: main.native, tags: { dont_link_with, extension:native, file:main.native, link, native, ocaml, program, quiet }
 ocamlopt.opt str.cmxa parser.cmx lexer.cmx main.cmx -o main.native
